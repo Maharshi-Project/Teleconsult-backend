@@ -53,13 +53,14 @@ public class PatientServiceImpl implements PatientService{
     public AuthenticationResponse saveNewPatient(Patient patient){
         Patient patient1 = patientRepository.findByEmail(patient.getEmail()).orElse(null);
         if(patient1 == null) {
-            patient1.setPassword(passwordEncoder.encode(patient.getPassword()));
-            patient1.setEmail(patient.getEmail());
-            patient1.setName(patient.getName());
-            patient1.setGender(patient.getGender());
-            patient1.setPhoneNumber(patient.getPhoneNumber());
-            patient1.setRole(Role.valueOf(Role.USER.toString()));
-            patientRepository.save(patient1);
+            Patient patient2 = new Patient();
+            patient2.setPassword(passwordEncoder.encode(patient.getPassword()));
+            patient2.setEmail(patient.getEmail());
+            patient2.setName(patient.getName());
+            patient2.setGender(patient.getGender());
+            patient2.setPhoneNumber(patient.getPhoneNumber());
+            patient2.setRole(Role.valueOf(Role.USER.toString()));
+            patientRepository.save(patient2);
             return new AuthenticationResponse(null, "User Registration was Successful!!");
         }
         else
