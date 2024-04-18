@@ -3,6 +3,7 @@ package com.teleconsulting.demo.controller;
 import com.teleconsulting.demo.exception.UserNotFoundException;
 import com.teleconsulting.demo.model.Doctor;
 import com.teleconsulting.demo.model.Patient;
+import com.teleconsulting.demo.dto.RegDoc;
 import com.teleconsulting.demo.repository.PatientRepository;
 import com.teleconsulting.demo.service.DoctorService;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,12 @@ public class AdminController {
     }
 
     @PostMapping("/register/doctor")
-    public ResponseEntity<?> RegisterDoctor(@RequestBody Doctor doctor) {
-        return ResponseEntity.ok(doctorService.saveNewDoctor(doctor));
+    public ResponseEntity<?> RegisterDoctor(@RequestBody RegDoc regDoc) {
+        return ResponseEntity.ok(doctorService.saveNewDoctor(regDoc));
+    }
+    @GetMapping("/getSrDoctors")
+    List<Doctor> getAllSrDoctors(){
+        return doctorService.getAllSrDoctors();
     }
     @GetMapping("/getdoctors")
     List<Doctor> getAllDoctors() {

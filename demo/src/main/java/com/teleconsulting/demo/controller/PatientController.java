@@ -1,8 +1,10 @@
 package com.teleconsulting.demo.controller;
 
+import com.teleconsulting.demo.dto.DoctorRating;
 import com.teleconsulting.demo.exception.UserNotFoundException;
 import com.teleconsulting.demo.model.Patient;
 import com.teleconsulting.demo.repository.PatientRepository;
+import com.teleconsulting.demo.service.DoctorService;
 import com.teleconsulting.demo.service.PatientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class PatientController {
     private final PatientService patientService;
     private final PatientRepository patientRepository;
+    private final DoctorService doctorService;
 
-    public PatientController(PatientService patientService, PatientRepository patientRepository) {
+    public PatientController(PatientService patientService, PatientRepository patientRepository, DoctorService doctorService) {
         this.patientService = patientService;
         this.patientRepository = patientRepository;
+        this.doctorService = doctorService;
     }
-//    @PostMapping("/add") // Patient
-//    public String add(@RequestBody Patient patient)
-//    {
-//        patientService.savePatient(patient);
-//        return "New Patient Added";
-//    }
 
     @GetMapping("/patient/{id}") // Get Patient details by its ID
     Patient getUserById(@PathVariable Long id) {
@@ -57,5 +55,10 @@ public class PatientController {
     public ResponseEntity<Patient> getPatientById(@RequestParam String phoneNumber) {
         Patient patient = patientService.getPatientByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(patient);
+    }
+    @PostMapping("/rateDoc")
+    public void updateDocRating(@RequestBody DoctorRating doctorRating) {
+        System.out.println("\nInside Patient Controller calling update Rating\n");
+        doctorService.updateRating(doctorRating.getId(),doctorRating.getRating());
     }
 }

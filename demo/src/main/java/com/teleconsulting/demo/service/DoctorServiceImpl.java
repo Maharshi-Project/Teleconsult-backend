@@ -1,8 +1,9 @@
 package com.teleconsulting.demo.service;
 
 import com.teleconsulting.demo.exception.UserNotFoundException;
-import com.teleconsulting.demo.model.AuthenticationResponse;
+import com.teleconsulting.demo.dto.AuthenticationResponse;
 import com.teleconsulting.demo.model.Doctor;
+import com.teleconsulting.demo.dto.RegDoc;
 import com.teleconsulting.demo.model.Role;
 import com.teleconsulting.demo.repository.DoctorRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,27 +28,58 @@ public class DoctorServiceImpl implements DoctorService{
     }
 
     @Override
+    public void updateRating(Long id, int rating) {
+        Doctor doctor = doctorRepository.findById(id).orElse(null);
+        if(doctor != null)
+        {
+            int tempRating = doctor.getTotalRating();
+            tempRating += rating;
+            int tempCount = doctor.getAppointmentCount();
+            tempCount++;
+            doctor.setTotalRating(tempRating);
+            doctor.setAppointmentCount(tempCount);
+            doctorRepository.save(doctor);
+        }
+    }
+
+    @Override
     public Doctor saveDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
     @Override
-    public AuthenticationResponse saveNewDoctor(Doctor doctor) {
+    public AuthenticationResponse saveNewDoctor(RegDoc regDoc) {
         Doctor doctor2 = new Doctor();
-        doctor2 = doctorRepository.findByEmail(doctor.getEmail()).orElse(null);
+        doctor2 = doctorRepository.findByEmail(regDoc.getEmail()).orElse(null);
         if(doctor2 == null)
         {
             Doctor doctor1 = new Doctor();
-            doctor1.setName(doctor.getName());
-            doctor1.setEmail(doctor.getEmail());
-            doctor1.setGender(doctor.getGender());
-            doctor1.setPassword(passwordEncoder.encode(doctor.getPassword()));
-            doctor1.setPhoneNumber(doctor.getPhoneNumber());
-            doctor1.setRole(Role.valueOf(Role.DOCTOR.toString()));
-            if (doctor.getSupervisorDoctor() != null && doctor.getSupervisorDoctor().getId() != null) {
-                Doctor supervisorDoctor = doctorRepository.findById(doctor.getSupervisorDoctor().getId()).orElse(null);
+            doctor1.setName(regDoc.getName());
+            doctor1.setEmail(regDoc.getEmail());
+            doctor1.setGender(regDoc.getGender());
+            doctor1.setPassword(passwordEncoder.encode(regDoc.getPassword()));
+            doctor1.setPhoneNumber(regDoc.getPhoneNumber());
+            System.out.println(regDoc.getSupervisorDoctor()+"\n");
+            if(regDoc.getSupervisorDoctor() == null)
+            {
+                System.out.println("Hello Sr Doc \n");
+                doctor1.setRole(Role.valueOf(Role.SRDOC.toString()));
+                System.out.println("\nRole is "+Role.valueOf(Role.SRDOC.toString()));
+            }
+            else
+            {
+                doctor1.setRole(Role.valueOf(Role.DOCTOR.toString()));
+            }
+            if (regDoc.getSupervisorDoctor() != null) {
+                Doctor supervisorDoctor = doctorRepository.findById(regDoc.getSupervisorDoctor()).orElse(null);
                 doctor1.setSupervisorDoctor(supervisorDoctor);
             }
+            else
+            {
+                System.out.println("Super is set to null\n");
+                doctor1.setSupervisorDoctor(null);
+            }
             doctor1.setIncomingCall(null);
+            System.out.println(doctor1.getSupervisorDoctor());
             doctorRepository.save(doctor1);
             return new AuthenticationResponse(null, "Doctor Registration was Successful");
         }
@@ -59,6 +91,12 @@ public class DoctorServiceImpl implements DoctorService{
     public List<Doctor> getAllDoctors() {
         return doctorRepository.findAll();
     }
+
+    @Override
+    public List<Doctor> getAllSrDoctors() {
+        return doctorRepository.findAllSrDoc();
+    }
+
     @Override
     public Doctor findByPhoneNumber(String phoneNumber) {
         return doctorRepository.findByPhoneNumber(phoneNumber);
@@ -93,7 +131,6 @@ public class DoctorServiceImpl implements DoctorService{
         existingDoctor.setRole(Role.valueOf(Role.DOCTOR.toString()));
         existingDoctor.setSupervisorDoctor(updatedDoctor.getSupervisorDoctor());
         doctorRepository.save(existingDoctor);
-        // Save the updated doctor entity
         return existingDoctor;
     }
 
